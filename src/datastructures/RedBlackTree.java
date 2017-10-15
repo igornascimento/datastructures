@@ -103,7 +103,7 @@ class RedBlackNode<T extends Comparable<T>> {
 			return false;
 		return parent.left == this;
 	}
-
+	
 	public void rotateLeft() {
 		if (right == null) return;
 		RedBlackNode<T> N = this;
@@ -146,6 +146,20 @@ class RedBlackNode<T extends Comparable<T>> {
 		left = node;
 	}
 	
+	public RedBlackNode getLeft() {
+		return this.left;
+	}
+	
+	public RedBlackNode getRight() {
+		return this.right;
+	}
+	
+	public boolean replaceNode(RedBlackNode newNode) {
+		newNode.left = this.left;
+		newNode.right = this.right;
+		newNode.value = this.value;
+		newNode.parent = this.parent;
+	}
 }
 
 public class RedBlackTree<T extends Comparable<T>>
@@ -228,6 +242,122 @@ public class RedBlackTree<T extends Comparable<T>>
 			else GG.setRight(P);
 		else
 			root = P;
+	}
+	
+	
+	private RedBlackNode brotherNode(RedBlackNode n) {
+		if (n.getParent().isLeftSon()) {
+			return n.getParent().getRight();
+		} else {
+			return n.getParent().getLeft();
+		}
+	}
+
+	
+	/**
+	 * Node n has at most one child
+	 */
+	public void excludeSon(RedBlackNode n) {
+		RedBlackNode son;
+		if (n.getLeft() != null) {
+			son = n.getLeft();
+		} else {
+			son = n.getRight();
+		}
+		n.replaceNode(son);
+		if (!n.isRed()) {
+			if (son.isRed()) {
+				son.setBlack();
+			} else {
+				exclude_case1(son);
+			}
+		}
+	}
+	
+	public void exclude_case1(RedBlackNode n) {
+		if (n.getParent() != null) {
+			// it's not root
+			exclude_cas2(n);
+		}
+	}
+	
+	public void exclude_case2(RedBlackNode n) {
+		RedBlackNode b = this.brotherNode(n);
+		if (b.isRed()) {
+			n.getParent().setRed();
+			b.setBlack();
+			if (n == n.getParent().getLeft()) {
+				n.getParent().rotateLeft();
+			} else {
+				n.getParent().rotateRight();
+			}
+		}
+		exclude_case3(n);
+	}
+	
+	public void exclude_case3(RedBlackNode n) {
+		RedBlackNode b = this.brotherNode(n);
+		if ( !n.getParent().isRed() &&
+			 !b.isRed() &&
+			 !b.getLeft().isRed() &&
+			 !b.getRight().isRed()) {
+			b.setRed();
+			exclude_case1(n.getParent());
+		} else {
+			exclude_case4(n);
+		}
+	}
+	
+	public void exclude_case4(RedBlackNode n) {
+		RedBlackNode b = this.brotherNode(n);
+		if ( n.getParent().isRed() &&
+			 !b.isRed() &&
+			 !b.getLeft().isRed() && 
+			 !b.getRight().isRed() ) {
+			b.setRed();
+			n.getParent().setBlack();
+		} else {
+			exclude_case5(n);
+		}
+	}
+	
+	public void exclude_case5(RedBlackNode n) {
+		RedBlackNode b = this.brotherNode(n);
+		if (!b.isRed()) {
+			if ( n == n.getParent().getLeft() &&
+				 !b.getRight().isRed() && 
+				 b.getRight().isRed()) {
+				b.setRed();
+				b.getLeft().setBlack();
+				b.rotateRight();
+			} else if (n == n.getParent().getRight() && 
+					   !b.getLeft().isRed() &&
+					   b.getRight().isRed()) {
+				b.setRed();
+				b.getRight().setBlack();
+				b.rotateLeft();
+			}
+		}
+		exclude_case6(n);
+	}
+	
+	public void exclude_case6(RedBlackNode n) {
+		RedBlackNode b = this.brotherNode(n);
+		if (n.getParent().isRed()) {
+			b.setRed();
+		}
+		if (n.getParent().isBlack()) {
+			b.setBlack();
+		}
+		n.getParent().setBlack();
+		
+		if (n == n.getParent().getLeft()) {
+			b.getRight().setBlack();
+			n.getParent().rotateLeft();
+		} else {
+			b.getLeft().setBlack();
+			n.getParent().rotateRight();
+		}
 	}
 	
 	public void print() {
